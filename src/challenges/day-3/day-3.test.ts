@@ -1,5 +1,4 @@
-import { day3Puzzle1 } from './day-3.puzzle-1'
-import { day3Puzzle2 } from './day-3.puzzle-2'
+import { day3Puzzle1, day3Puzzle2 } from './day-3.puzzle-1'
 import { day3Data, day3Mock } from './day-3.data'
 
 describe('Day 3', () => {

@@ -30,7 +30,7 @@ module.exports = {
     'block-scoped-var': 'error',
     'block-spacing': 'error',
     'complexity': ['warn', { max: 10 } ],
-    'curly': ['warn', 'multi', 'consistent' ],
+    'curly': ['warn', 'all' ],
     'default-param-last': 'error',
     'dot-location': ['error', 'property' ],
     'dot-notation': ['error', { 'allowPattern': 'id' } ],
@@ -79,7 +79,7 @@ module.exports = {
     'max-len': [
       'error',
       {
-        'code': 100,
+        'code': 120,
         'tabWidth': 2,
         'ignoreTrailingComments': true,
         'ignoreUrls': true,
@@ -91,7 +91,7 @@ module.exports = {
     'max-lines-per-function': [
       'error',
       {
-        'max': 20,
+        'max': 40,
         'skipBlankLines': true,
         'skipComments': true,
 
