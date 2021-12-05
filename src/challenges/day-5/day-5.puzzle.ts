@@ -8,15 +8,12 @@ type Grid = number[][]
 const createGrid = (maxVal: Coordinate): Grid => Array(maxVal.y+1).fill(Array(maxVal.x+1).fill(0))
 const equal = (line: Line, dir: 'x'|'y') => line.start[dir] === line.end[dir]
 const diff = (line: Line, dir: 'x'|'y') => Math.abs(line.end[dir] - line.start[dir])
-const moreThanTwoOccurrences = (g: Grid) => g.reduce((occ, curr) => occ + curr.filter(v => v>=2).length, 0)
+const occurrenceFilter = (g: Grid) => g.reduce((occ, curr) => occ + curr.filter(v => v>=2).length, 0)
 
-const prepareData = (filePath: string): Line[] => fs.readFileSync(path.join(__dirname, filePath))
+const prepareData = (file: string): Line[] => fs.readFileSync(path.join(__dirname, file))
   .toString().split('\n').filter(row => !!row.length).map(row => {
-    const coordinates = row.split('->').map(c => c.trim().split(',').map(str => parseInt(str)))
-    return {
-      start: { x: coordinates[0][0], y: coordinates[0][1] },
-      end: { x: coordinates[1][0], y: coordinates[1][1] }
-    }
+    const cs = row.split('->').map(c => c.split(',').map(str => parseInt(str)))
+    return { start: { x: cs[0][0], y: cs[0][1] }, end: { x: cs[1][0], y: cs[1][1] } }
   })
 
 const gridSize = (lines: Line[]): Coordinate => lines.reduce((prevMax, curr) => {
@@ -41,13 +38,10 @@ const fillVerticalOrHorizontal = (isHorizontal: boolean, grid: Grid, line: Line)
   }
 }
 
-const fillGrid = (lines: Line[], referenceGrid: Grid, diagonal?: boolean) => lines.reduce((grid, line) => {
+const fillGrid = (lines: Line[], diagonal?: boolean) => lines.reduce((grid, line) => {
   if (equal(line, 'x') || equal(line, 'y')) { fillVerticalOrHorizontal(equal(line, 'y'), grid, line) }
   if (diagonal && !equal(line, 'x') && !equal(line, 'y')) { fillDiagonal(grid, line) }
   return grid
-}, JSON.parse(JSON.stringify(referenceGrid)))
+}, JSON.parse(JSON.stringify(createGrid(gridSize(lines)))))
 
-export const day5Puzzle = (filePath: string, isSecondPuzzle?: boolean): number => {
-  const lines = prepareData(filePath)
-  return moreThanTwoOccurrences(fillGrid(lines, createGrid(gridSize(lines)), isSecondPuzzle))
-}
+export const day5Puzzle = (file: string, second?: boolean) => occurrenceFilter(fillGrid(prepareData(file), second))
