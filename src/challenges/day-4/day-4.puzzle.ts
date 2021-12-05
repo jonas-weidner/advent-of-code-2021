@@ -1,47 +1,32 @@
 import fs from 'fs'
 import path from 'path'
 
-type BingoField = {
-  value: number;
-  called: boolean
-}
+type BingoField = { value: number; called: boolean; }
 
 const assignCalled = (boards: BingoField[][][], drawnNumber: number) => {
   for (let boardIndex=0; boardIndex<boards.length; boardIndex++) {
     for (let lineIndex=0; lineIndex<5; lineIndex++) {
-      const numberIndex = boards[boardIndex][lineIndex]
-        .findIndex(field => field.value === drawnNumber)
+      const numberIndex = boards[boardIndex][lineIndex].findIndex(field => field.value === drawnNumber)
       if (numberIndex !== -1) { boards[boardIndex][lineIndex][numberIndex].called = true }
     }
   }
 }
 
 const prepareData = (filePath: string) => {
-  const input = fs.readFileSync(path.join(__dirname, filePath)).toString()
-  const lines = input.split('\n')
-  const drawnNumbers: number[] = lines.splice(0, 1)[0].split(',')
-    .map(stringNumber => parseInt(stringNumber))
-
+  const lines = fs.readFileSync(path.join(__dirname, filePath)).toString().split('\n')
+  const drawnNumbers: number[] = lines.splice(0, 1)[0].split(',').map(stringNumber => parseInt(stringNumber))
   const boards: BingoField[][][] = []
   while (lines.length >= 6) {
     const boardLines: BingoField[][] = []
-    for (let i=1; i<6; i++)
-    { boardLines.push(lines[i].trim()
-      .replace(/\s{2,}/g, ' ').split(' ').map(stringNumber => {
-        return {
-          value: parseInt(stringNumber.trim()),
-          called: false
-        }
-      })) }
-
+    for (let i=1; i<6; i++) {
+      boardLines.push(lines[i].trim().replace(/\s{2,}/g, ' ').split(' ').map(str => {
+        return { value: parseInt(str.trim()), called: false }
+      }))
+    }
     boards.push(boardLines)
     lines.splice(0, 6)
   }
-
-  return {
-    boards,
-    drawnNumbers
-  }
+  return { boards, drawnNumbers }
 }
 
 const checkForCompleteRow = (boards: BingoField[][][]): number[] => {
@@ -67,27 +52,10 @@ const checkForCompleteColumn = (boards: BingoField[][][]): number[] => {
   return indices
 }
 
-const calculateUnmarkedSum = (rows: BingoField[][]) => {
-  return rows.reduce((unmarkedSum, currRow) => {
-    return unmarkedSum + currRow.reduce((lineUnmarkedSum, currField) => {
-      return !currField.called ? lineUnmarkedSum+currField.value : lineUnmarkedSum
-    }, 0)
-  }, 0)
-}
-
-
-export const day4Puzzle1 = (filePath: string): number => {
-  const { drawnNumbers, boards } = prepareData(filePath)
-  for (const drawnNumber of drawnNumbers) {
-    assignCalled(boards, drawnNumber)
-    const completedRow = checkForCompleteRow(boards)[0]
-    const completedColumn = checkForCompleteColumn(boards)[0]
-    if (completedRow || completedColumn) {
-      return calculateUnmarkedSum(boards[(completedRow || completedColumn) as number]) * drawnNumber
-    }
-  }
-  return 0
-}
+const calculateUnmarkedSum = (rows: BingoField[][]) => rows.reduce((unmarkedSum, currRow) => {
+  return unmarkedSum + currRow
+    .reduce((lineUnmarkedSum, currField) => !currField.called ? lineUnmarkedSum+currField.value : lineUnmarkedSum, 0)
+}, 0)
 
 const calculateResult = (boards: BingoField[][][], drawnNumber: number, boardsThatWon: {boardIndex: number; result: number}[], indices: number[]): {boardIndex: number; result: number}[] => {
   return indices.map(boardIndex => {
@@ -102,7 +70,7 @@ const calculateResult = (boards: BingoField[][][], drawnNumber: number, boardsTh
   }).filter(el => !!el) as {boardIndex: number; result: number}[]
 }
 
-export const day4Puzzle2 = (filePath: string): number => {
+export const day4Puzzle = (filePath: string, second?: boolean): number => {
   const { drawnNumbers, boards } = prepareData(filePath)
   const boardsThatWon: {boardIndex: number; result: number}[] = []
   for (const drawnNumber of drawnNumbers) {
@@ -110,5 +78,5 @@ export const day4Puzzle2 = (filePath: string): number => {
     boardsThatWon.push(...calculateResult(boards, drawnNumber, boardsThatWon, checkForCompleteRow(boards)))
     boardsThatWon.push(...calculateResult(boards, drawnNumber, boardsThatWon, checkForCompleteColumn(boards)))
   }
-  return boardsThatWon[boardsThatWon.length-1].result
+  return boardsThatWon[second ? boardsThatWon.length-1 : 0].result
 }

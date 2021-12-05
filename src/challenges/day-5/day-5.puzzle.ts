@@ -32,9 +32,8 @@ const fillDiagonal = (grid: Grid, line: Line) => {
 
 const fillVerticalOrHorizontal = (isHorizontal: boolean, grid: Grid, line: Line) => {
   const xy = isHorizontal ? 'x' : 'y'
-  const { start, end } = line
-  for (let i = Math.min(start[xy], end[xy]); i <= Math.max(start[xy], end[xy]); i++) {
-    grid[isHorizontal ? start.y : i][isHorizontal ? i : start.x]++
+  for (let i = Math.min(line.start[xy], line.end[xy]); i <= Math.max(line.start[xy], line.end[xy]); i++) {
+    grid[isHorizontal ? line.start.y : i][isHorizontal ? i : line.start.x]++
   }
 }
 
