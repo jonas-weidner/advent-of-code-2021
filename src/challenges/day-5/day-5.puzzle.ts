@@ -1,97 +1,53 @@
 import fs from 'fs'
 import path from 'path'
 
-type Coordinate = {
-  x: number,
-  y: number
-}
-
-type Line = {
-  start: Coordinate
-  end: Coordinate
-}
-
+type Coordinate = { x: number; y: number; }
+type Line = { start: Coordinate; end: Coordinate; }
 type Grid = number[][]
 
-const prepareData = (filePath: string): Line[] => {
-  const rows = fs.readFileSync(path.join(__dirname, filePath)).toString().split('\n')
-  return rows.filter(row => !!row.length).map(row => {
-    const coordinates = row.trim().split(' -> ')
-    const start = coordinates[0].trim().split(',').map(stringNumber => parseInt(stringNumber))
-    const end = coordinates[1].trim().split(',').map(stringNumber => parseInt(stringNumber))
+const createGrid = (maxVal: Coordinate): Grid => Array(maxVal.y+1).fill(Array(maxVal.x+1).fill(0))
+const equal = (line: Line, dir: 'x'|'y') => line.start[dir] === line.end[dir]
+const diff = (line: Line, dir: 'x'|'y') => Math.abs(line.end[dir] - line.start[dir])
+const moreThanTwoOccurrences = (g: Grid) => g.reduce((occ, curr) => occ + curr.filter(v => v>=2).length, 0)
+
+const prepareData = (filePath: string): Line[] => fs.readFileSync(path.join(__dirname, filePath))
+  .toString().split('\n').filter(row => !!row.length).map(row => {
+    const coordinates = row.split('->').map(c => c.trim().split(',').map(str => parseInt(str)))
     return {
-      start: {
-        x: start[0],
-        y: start[1]
-      },
-      end: {
-        x: end[0],
-        y: end[1]
-      }
+      start: { x: coordinates[0][0], y: coordinates[0][1] },
+      end: { x: coordinates[1][0], y: coordinates[1][1] }
     }
   })
-}
 
-const findMaxValues = (input: Line[]): Coordinate => {
-  return input.reduce((previousMax, current) => {
-    return {
-      x: Math.max(previousMax.x, current.start.x, current.end.x),
-      y: Math.max(previousMax.y, current.start.y, current.end.y)
-    }
-  }, {
-    x: 0,
-    y: 0
-  })
-}
-
-const createGrid = (lines: Line[]): Grid => {
-  const maxValues = findMaxValues(lines)
-  return Array(maxValues.y+1).fill(Array(maxValues.x+1).fill(0))
-}
+const gridSize = (lines: Line[]): Coordinate => lines.reduce((prevMax, curr) => {
+  const { start, end } = curr
+  return { x: Math.max(prevMax.x, start.x, end.x), y: Math.max(prevMax.y, start.y, end.y) }
+}, { x: 0, y: 0 })
 
 const fillDiagonal = (grid: Grid, line: Line) => {
-  const xSteps = Math.abs(line.end.x - line.start.x)
-  const ySteps = Math.abs(line.end.y - line.start.y)
-  const isDiagonal = xSteps === ySteps
-  if (isDiagonal) {
-    const sorted = line.start.x > line.end.x ? {
-      start: line.end,
-      end: line.start
-    } : line
-    for (let i = 0; i <= xSteps; i++) {
-      grid[sorted.start.y > sorted.end.y ? sorted.start.y-i : sorted.start.y+i][sorted.start.x + i]++
+  if (diff(line, 'x') === diff(line, 'y')) {
+    const { start, end } = line.start.x > line.end.x ? { start: line.end, end: line.start } : line
+    for (let i = 0; i <= diff(line, 'x'); i++) {
+      grid[start.y > end.y ? start.y - i : start.y + i][start.x + i]++
     }
   }
 }
 
 const fillVerticalOrHorizontal = (isHorizontal: boolean, grid: Grid, line: Line) => {
   const xy = isHorizontal ? 'x' : 'y'
-  const start = Math.min(line.start[xy], line.end[xy])
-  const end = Math.max(line.start[xy], line.end[xy])
-  for (let i = start; i <= end; i++) {
-    grid[isHorizontal ? line.start.y : i][isHorizontal ? i : line.start.x]++
+  const { start, end } = line
+  for (let i = Math.min(start[xy], end[xy]); i <= Math.max(start[xy], end[xy]); i++) {
+    grid[isHorizontal ? start.y : i][isHorizontal ? i : start.x]++
   }
 }
 
-const fillGrid = (lines: Line[], referenceGrid: Grid, diagonal: boolean = false) => {
-  const grid: Grid = JSON.parse(JSON.stringify(referenceGrid))
-  lines.forEach(line => {
-    const isHorizontal = line.start.y === line.end.y
-    const isVertical = line.start.x === line.end.x
-    if (isVertical || isHorizontal) { fillVerticalOrHorizontal(isHorizontal, grid, line) }
-    if (diagonal && !isVertical && !isHorizontal) { fillDiagonal(grid, line) }
-  })
+const fillGrid = (lines: Line[], referenceGrid: Grid, diagonal?: boolean) => lines.reduce((grid, line) => {
+  if (equal(line, 'x') || equal(line, 'y')) { fillVerticalOrHorizontal(equal(line, 'y'), grid, line) }
+  if (diagonal && !equal(line, 'x') && !equal(line, 'y')) { fillDiagonal(grid, line) }
   return grid
-}
+}, JSON.parse(JSON.stringify(referenceGrid)))
 
-export const day5Puzzle1 = (filePath: string): number => {
+export const day5Puzzle = (filePath: string, isSecondPuzzle?: boolean): number => {
   const lines = prepareData(filePath)
-  return fillGrid(lines, createGrid(lines))
-    .reduce((occurrence, current) => occurrence + current.filter(value => value >= 2).length, 0)
-}
-
-export const day5Puzzle2 = (filePath: string): number => {
-  const lines = prepareData(filePath)
-  return fillGrid(lines, createGrid(lines), true)
-    .reduce((occurrence, current) => occurrence + current.filter(value => value >= 2).length, 0)
+  return moreThanTwoOccurrences(fillGrid(lines, createGrid(gridSize(lines)), isSecondPuzzle))
 }
