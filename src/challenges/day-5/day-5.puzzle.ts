@@ -43,4 +43,4 @@ const fillGrid = (lines: Line[], diagonal?: boolean) => lines.reduce((grid, line
   return grid
 }, JSON.parse(JSON.stringify(createGrid(gridSize(lines)))))
 
-export const day5Puzzle = (file: string, second?: boolean) => occurrenceFilter(fillGrid(prepareData(file), second))
+export const day5Puzzle = (file: string, diagonal?: boolean) => occurrenceFilter(fillGrid(prepareData(file), diagonal))
