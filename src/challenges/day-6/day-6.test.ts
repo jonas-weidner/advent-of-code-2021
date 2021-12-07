@@ -1,6 +1,6 @@
 import { day6Puzzle } from './day-6.puzzle'
 
-describe('Day 5', () => {
+describe('Day 6', () => {
   it('Puzzle 1', () => {
     expect(day6Puzzle('./data/mock.txt')).toBe(5934)
     expect(day6Puzzle('./data/input.txt')).toBe(362666)
