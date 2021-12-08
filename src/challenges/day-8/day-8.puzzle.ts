@@ -16,19 +16,20 @@ export const day8Puzzle1 = (file: string) => prepareData(file)
 
 export const day8Puzzle2 = (file: string) => {
   const lines = prepareData(file)
-  return lines.reduce((sum, { pattern: preSort, output }) => {
-    const pattern = preSort.map(toSort => toSort.split('').sort().join('').trim())
-    const a = fiC(fwL(pattern, 3), [fwL(pattern, 2)])
-    const fiveFiltered = fiwL(pattern, 5).map(n => fiC(n, [fwL(pattern, 4), a]))
-    const g = fwL(fiveFiltered, 1)
-    const e = fwL(fiveFiltered.map(n => fiC(n, [g])), 1)
-    const d = fwL(fiwL(pattern, 5).map(n => fiC(n, [fwL(pattern, 2), g, a, e])), 1)
-    const b = fiC(fwL(pattern, 4), [d, fwL(pattern, 2)])
-    const f = fwL(fiwL(pattern, 5).map(n => fiC(n, [a, b, d, g])), 1)
-    const c = fiC(fwL(pattern, 2), [f])
-    const mappedAndSorted = output.map(n => {
+  return lines.reduce((sum, { pattern, output }) => {
+    const pat = pattern.map(toSort => toSort.split('').sort().join('').trim())
+    const a = fiC(fwL(pat, 3), [fwL(pat, 2)])
+    const fiveFi = fiwL(pat, 5).map(n => fiC(n, [fwL(pat, 4), a]))
+    const g = fwL(fiveFi, 1)
+    const e = fwL(fiveFi.map(n => fiC(n, [g])), 1)
+    const d = fwL(fiwL(pat, 5).map(n => fiC(n, [fwL(pat, 2), g, a, e])), 1)
+    const b = fiC(fwL(pat, 4), [d, fwL(pat, 2)])
+    const f = fwL(fiwL(pat, 5).map(n => fiC(n, [a, b, d, g])), 1)
+    const c = fiC(fwL(pat, 2), [f])
+    const mapped = output.map(n => {
       return n.split('').map(char => letters[[a, b, c, d, e, f, g].findIndex(l => l === char)]).sort().join('')
     })
-    return sum + parseInt(mappedAndSorted.map(m => og.findIndex(v => v === m)).join(''))
+    return sum + parseInt(mapped.map(m => og.findIndex(v => v === m)).join(''))
   }, 0)
 }
+

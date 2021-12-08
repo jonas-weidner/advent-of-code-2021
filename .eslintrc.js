@@ -97,7 +97,7 @@ module.exports = {
 
       },
     ],
-    'max-nested-callbacks': ['error', 3 ],
+    'max-nested-callbacks': ['error', 5 ],
     'new-parens': 'error',
     'no-multi-assign': 'error',
     'no-trailing-spaces': [
