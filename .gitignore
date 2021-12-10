@@ -2,3 +2,4 @@
 /dist/
 .npmrc
 .idea
+.DS_Store
